@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout | KC Bible Shop</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: #fdfaf5;
+}
+
+/* HEADER */
+header {
+    background: #630d16;
+    color: white;
+    padding: 28px;
+    text-align: center;
+}
+
+nav a {
+    color: #f7e08b;
+    margin: 0 12px;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+/* CONTAINER */
+main {
+    max-width: 700px;
+    margin: 60px auto;
+    background: white;
+    padding: 45px;
+    border-radius: 24px;
+    box-shadow: 0 25px 45px rgba(0,0,0,0.1);
+}
+
+/* TITLES */
+h2 {
+    color: #630d16;
+    margin-bottom: 12px;
+}
+
+.step {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9ca3af;
+    margin-bottom: 25px;
+}
+
+/* CART LIST */
+ul {
+    list-style: none;
+    padding: 0;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.qty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #e5e7eb;
+    cursor: pointer;
+}
+
+/* SUMMARY */
+.summary {
+    margin-top: 30px;
+    font-size: 14px;
+}
+
+.summary div {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.summary .total {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+/* PRIMARY BUTTON */
+.primary-btn {
+    width: 100%;
+    margin-top: 35px;
+    padding: 18px;
+    border-radius: 40px;
+    border: none;
+    background: linear-gradient(135deg, #630d16, #8a1b25);
+    color: white;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+
+/* FOOTER NOTE */
+.note {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #6b7280;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Checkout</h1>
+    <p>Review your order</p>
+
+    <nav>
+        <a href="index.html">🏠 Home</a>
+        <a href="products.html">📦 Products</a>
+    </nav>
+</header>
+
+<main>
+
+    <div class="step">Step 1 of 3 · Order Summary</div>
+
+    <h2>Your Items</h2>
+    <ul id="cartItems"></ul>
+
+    <div class="summary">
+        <div>
+            <span>Subtotal (excl. VAT)</span>
+            <span id="subtotal">R0.00</span>
+        </div>
+        <div>
+            <span>VAT (15%)</span>
+            <span id="vat">R0.00</span>
+        </div>
+        <div class="total">
+            <span>Total (incl. VAT)</span>
+            <span id="total">R0.00</span>
+        </div>
+    </div>
+
+    <!-- PRIMARY ACTION -->
+    <button class="primary-btn"
+            onclick="window.location.href='payment.html'">
+        Continue to Payment →
+    </button>
+
+    <p class="note">
+        You’ll choose delivery and payment options next.
+    </p>
+
+</main>
+
+<footer style="background:black;color:#9ca3af;padding:24px;text-align:center;font-size:12px;">
+    &copy; 2025 KC Bible Shop
+</footer>
+
+<script>
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+cart = cart.map(i => ({ ...i, quantity: i.quantity || 1 }));
+
+function renderCart() {
+    const list = document.getElementById("cartItems");
+    list.innerHTML = "";
+
+    let total = 0;
+
+    cart.forEach((item, i) => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        const li = document.createElement("li");
+        li.innerHTML = `
+            <span>
+                ${item.name}<br>
+                R${item.price.toFixed(2)} × ${item.quantity}
+            </span>
+
+            <div class="qty">
+                <button onclick="changeQty(${i}, -1)">−</button>
+                <strong>${item.quantity}</strong>
+                <button onclick="changeQty(${i}, 1)">+</button>
+            </div>
+        `;
+        list.appendChild(li);
+    });
+
+    const subtotal = total / 1.15;
+    const vat = total - subtotal;
+
+    document.getElementById("subtotal").textContent = "R" + subtotal.toFixed(2);
+    document.getElementById("vat").textContent = "R" + vat.toFixed(2);
+    document.getElementById("total").textContent = "R" + total.toFixed(2);
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+}
+
+function changeQty(index, amount) {
+    cart[index].quantity += amount;
+    if (cart[index].quantity < 1) cart.splice(index, 1);
+    renderCart();
+}
+
+renderCart();
+</script>
+
+</body>
+</html>

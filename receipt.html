@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Receipt | KC Bible Shop</title>
+
+<style>
+@media print {
+    body {
+        background: white;
+    }
+    .no-print {
+        display: none;
+    }
+}
+
+body {
+    margin: 0;
+    font-family: "Courier New", monospace;
+    background: #fdfaf5;
+    padding: 30px;
+    font-size: 16px;
+}
+
+.receipt {
+    max-width: 420px;
+    margin: auto;
+    background: white;
+    padding: 35px;
+    border: 2px dashed #ccc;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 26px;
+}
+
+.subtitle {
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 18px;
+}
+
+hr {
+    border: none;
+    border-top: 2px dashed #aaa;
+    margin: 18px 0;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.total {
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.footer {
+    text-align: center;
+    font-size: 14px;
+    margin-top: 22px;
+}
+
+button {
+    margin-top: 14px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    background: #630d16;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<div class="receipt">
+
+    <h1>KC Bible Shop</h1>
+    <div class="subtitle">
+        Gandhi Square, Marshalltown<br>
+        Johannesburg
+    </div>
+
+    <hr>
+
+    <div class="item">
+        <span>Order Ref</span>
+        <span id="orderRef">—</span>
+    </div>
+    <div class="item">
+        <span>Payment</span>
+        <span id="paymentMethod">—</span>
+    </div>
+    <div class="item">
+        <span>Date</span>
+        <span id="date">—</span>
+    </div>
+
+    <hr>
+
+    <div id="items"></div>
+
+    <hr>
+
+    <div class="item">
+        <span>Subtotal</span>
+        <span id="subtotal">R0.00</span>
+    </div>
+    <div class="item">
+        <span>VAT (15%)</span>
+        <span id="vat">R0.00</span>
+    </div>
+    <div class="item total">
+        <span>Total</span>
+        <span id="total">R0.00</span>
+    </div>
+
+    <hr>
+
+    <div class="footer">
+        Thank you for shopping with us<br>
+        God bless you ✝️
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <button class="no-print" onclick="window.print()">
+        🖨 Print Receipt
+    </button>
+
+    <button class="no-print" onclick="window.location.href='checkout.html'">
+        ⬅ Back to Checkout
+    </button>
+
+</div>
+
+<script>
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let total = 0;
+
+const itemsDiv = document.getElementById("items");
+
+cart.forEach(item => {
+    const itemTotal = item.price * item.quantity;
+    total += itemTotal;
+
+    const div = document.createElement("div");
+    div.className = "item";
+    div.innerHTML = `
+        <span>${item.name} x${item.quantity}</span>
+        <span>R${itemTotal.toFixed(2)}</span>
+    `;
+    itemsDiv.appendChild(div);
+});
+
+const subtotal = total / 1.15;
+const vat = total - subtotal;
+
+document.getElementById("subtotal").textContent = "R" + subtotal.toFixed(2);
+document.getElementById("vat").textContent = "R" + vat.toFixed(2);
+document.getElementById("total").textContent = "R" + total.toFixed(2);
+
+document.getElementById("paymentMethod").textContent =
+    localStorage.getItem("paymentMethod") || "N/A";
+
+document.getElementById("orderRef").textContent =
+    localStorage.getItem("orderRef") || "KC000000";
+
+document.getElementById("date").textContent =
+    new Date().toLocaleString();
+</script>
+
+</body>
+</html>

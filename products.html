@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Products | KC Bible Shop</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Inter', sans-serif; }
+h1,h2,h3 { font-family: 'Playfair Display', serif; }
+</style>
+</head>
+<body class="bg-[#fdfaf5]">
+
+<!-- NAV -->
+<nav class="sticky top-0 bg-white shadow-md z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <a href="index.html" style="text-decoration: none; color: inherit;">
+                <h1 class="text-2xl font-bold text-[#630d16]">KC Bible Shop</h1>
+                <p class="text-sm italic text-gray-500">Illuminating Faith</p>
+            </a>
+    <div class="flex gap-4 items-center">
+      <a href="wishlist.html" class="text-sm text-[#630d16] hover:underline">💾 Wishlist</a>
+      <a href="delivery.html" class="text-sm text-[#630d16] hover:underline">🚚 Delivery Info</a>
+      <a href="checkout.html" class="relative">
+        🛒
+        <span id="cartCount" class="absolute -top-2 -right-3 bg-[#630d16] text-white text-[10px] px-2 py-0.5 rounded-full">0</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- SEARCH & FILTER -->
+<div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row md:justify-between gap-4">
+  <input type="text" id="searchInput" placeholder="Search products..." class="border rounded-lg px-4 py-2 w-full md:w-1/2">
+  <select id="sortSelect" class="border rounded-lg px-4 py-2 w-full md:w-1/4">
+    <option value="default">Sort By</option>
+    <option value="priceAsc">Price: Low → High</option>
+    <option value="priceDesc">Price: High → Low</option>
+    <option value="stock">Stock</option>
+  </select>
+</div>
+
+<!-- PRODUCTS -->
+<section class="py-6">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="text-4xl text-[#630d16] italic mb-12 text-center">Our Collection</h2>
+    <div id="productGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+  </div>
+</section>
+
+<!-- COUPON & SUMMARY -->
+<section class="max-w-7xl mx-auto px-6 py-6 bg-white rounded-2xl shadow mb-12">
+  <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+    <div class="flex gap-2 items-center">
+      <input type="text" id="couponInput" placeholder="Enter coupon code" class="border px-4 py-2 rounded-lg">
+      <button id="applyCouponBtn" class="bg-[#630d16] text-white px-4 py-2 rounded-lg hover:bg-[#7a121d]">Apply</button>
+    </div>
+    <div>
+      <p class="text-sm">Estimated Delivery: <span id="deliveryEstimate">--</span></p>
+      <p class="text-sm">Total: R<span id="orderTotal">0.00</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- STICKY CHECKOUT -->
+<div class="sticky bottom-6 flex justify-center z-40">
+  <a href="payment.html" class="bg-[#630d16] text-white px-10 py-4 rounded-full text-xs uppercase font-bold shadow-2xl hover:bg-[#7a121d]">
+    Proceed to Payment
+  </a>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-[#630d16] text-white px-6 py-3 rounded-full text-sm shadow-xl opacity-0 transition-all duration-300 z-50">
+Action completed
+</div>
+
+<script>
+/* ---------------- PRODUCTS ---------------- */
+const products = [
+  { name: "Dake's Bible", price: 2499.99, img: "Dake-bible.jpg", stock: 3 },
+  { name: "Life Application Study Bible", price: 1999.99, img: "study-bible.jpg", stock: 5 },
+  { name: "Makarios Library", price: 3499.99, img: "Makarios.jpg", stock: 2 },
+  { name: "The Art of Hearing", price: 299.99, img: "hearing.jpg", stock: 10 },
+  { name: "The Art of Leadership", price: 299.99, img: "leadership.jpg", stock: 10 },
+  { name: "Loyalty & Disloyalty", price: 219.99, img: "loyalty.jpg", stock: 8 },
+  { name: "Model Marriage", price: 450.00, img: "marriage.jpg", stock: 4 },
+  { name: "How You Can Preach Salvation", price: 450.00, img: "salvation.jpg", stock: 4 },
+  { name: "The Sweet Influences of the Anointing", price: 349.99, img: "sweet.jpg", stock: 6 },
+  { name: "It Is A Great Thing To Serve The Lord", price: 299.99, img: "great.jpg", stock: 7 },
+  { name: "He That Hath", price: 319.99, img: "hath.jpg", stock: 5 },
+  { name: "Labour To Be Blessed", price: 349.99, img: "labour.jpg", stock: 6 }
+];
+
+/* ---------------- CART & WISHLIST ---------------- */
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let wishlist = JSON.parse(localStorage.getItem("wishlist")) || [];
+let total = 0;
+
+/* ---------------- CART HELPERS ---------------- */
+function getCartQty(name){
+  const item = cart.find(i => i.name === name);
+  return item ? item.quantity : 0;
+}
+
+function saveCart(){
+  localStorage.setItem("cart", JSON.stringify(cart));
+  updateCartCount();
+}
+
+function updateCartCount(){
+  const count = cart.reduce((s,i)=>s+i.quantity,0);
+  document.getElementById("cartCount").textContent = count;
+}
+
+/* ---------------- TOAST ---------------- */
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.remove("opacity-0");
+  setTimeout(()=>t.classList.add("opacity-0"),2000);
+}
+
+/* ---------------- PRODUCT QTY ---------------- */
+const productQty = {};
+function changeQty(name, amount, max){
+  productQty[name] = (productQty[name]||1) + amount;
+  if(productQty[name]<1) productQty[name]=1;
+  if(productQty[name]>max) productQty[name]=max;
+  document.getElementById(`qty-${name}`).textContent = productQty[name];
+}
+
+/* ---------------- ADD TO CART ---------------- */
+function addToCart(name, price, stock){
+  const qty = productQty[name] || 1;
+  const inCart = getCartQty(name);
+  if(inCart+qty>stock){ showToast("Not enough stock ❌"); return; }
+  const item = cart.find(p=>p.name===name);
+  if(item) item.quantity += qty;
+  else cart.push({name, price, quantity: qty});
+  saveCart();
+  showToast(`${qty} added to cart 🛒`);
+  renderProducts();
+}
+
+/* ---------------- SAVE FOR LATER ---------------- */
+function saveForLater(product){
+  if(!wishlist.find(p => p.name === product.name)) wishlist.push(product);
+  localStorage.setItem("wishlist", JSON.stringify(wishlist));
+  showToast(`${product.name} saved for later`);
+}
+
+/* ---------------- RENDER PRODUCTS ---------------- */
+function renderProducts(list=products){
+  const grid = document.getElementById("productGrid");
+  grid.innerHTML="";
+  total=0;
+
+  list.forEach(p=>{
+    const inCart = getCartQty(p.name);
+    const remaining = p.stock - inCart;
+    productQty[p.name] = productQty[p.name] || 1;
+    const disabled = remaining<=0;
+
+    const card = document.createElement("div");
+    card.className="bg-white p-6 rounded-3xl shadow-lg text-center";
+
+    card.innerHTML=`
+      <img src="${p.img}" class="mx-auto h-48 object-cover mb-6 rounded-xl">
+      <h3 class="text-xl font-bold mb-2">${p.name}</h3>
+      <p class="text-gray-500 mb-1">R${p.price.toFixed(2)} <span class="text-xs">(incl. VAT)</span></p>
+      <p class="text-xs mb-4 ${remaining<=2?'text-red-600 font-bold':'text-gray-400'}">
+        ${remaining>0?`Stock left: ${remaining}`:'Out of stock'}
+      </p>
+      <div class="flex justify-center items-center gap-3 mb-4">
+        <button onclick="changeQty('${p.name}',-1,${remaining})" class="w-8 h-8 rounded-full bg-gray-200 font-bold">−</button>
+        <span id="qty-${p.name}" class="w-6 text-center">${Math.min(productQty[p.name],remaining||1)}</span>
+        <button onclick="changeQty('${p.name}',1,${remaining})" class="w-8 h-8 rounded-full bg-gray-200 font-bold">+</button>
+      </div>
+    `;
+
+    // Buttons container
+    const btnDiv = document.createElement("div");
+    btnDiv.className="flex flex-col gap-2";
+    const addBtn = document.createElement("button");
+    addBtn.textContent = disabled?"Out of Stock":"Add to Cart";
+    addBtn.disabled = disabled;
+    addBtn.className = `w-full px-6 py-3 rounded-full text-xs uppercase font-bold ${disabled?'bg-gray-400 cursor-not-allowed':'bg-[#630d16] text-white hover:bg-[#7a121d]'}`;
+    addBtn.onclick = ()=>addToCart(p.name,p.price,p.stock);
+    btnDiv.appendChild(addBtn);
+
+    const saveBtn = document.createElement("button");
+    saveBtn.textContent = "💾 Save for Later";
+    saveBtn.className = "w-full px-6 py-2 rounded-full text-xs font-semibold bg-gray-200 hover:bg-gray-300";
+    saveBtn.onclick = ()=>saveForLater(p);
+    btnDiv.appendChild(saveBtn);
+
+    card.appendChild(btnDiv);
+    grid.appendChild(card);
+  });
+}
+/* ---------------- COUPON & DELIVERY ---------------- */
+let discount=0;
+document.getElementById("applyCouponBtn").addEventListener("click",()=>{
+  const code=document.getElementById("couponInput").value.trim().toUpperCase();
+  const coupons={ "BIBLE10":0.10,"WELCOME5":0.05 };
+  if(coupons[code]) discount=coupons[code];
+  else { discount=0; alert("Invalid coupon code"); return; }
+  showToast(`Coupon applied! ${discount*100}% off`);
+  updateTotal();
+});
+
+function updateTotal(){
+  const totalCalc=products.reduce((sum,p)=>sum+(getCartQty(p.name)*p.price),0);
+  document.getElementById("orderTotal").textContent=(totalCalc*(1-discount)).toFixed(2);
+}
+
+/* ---------------- ESTIMATED DELIVERY ---------------- */
+const deliveryDate=new Date();
+deliveryDate.setDate(deliveryDate.getDate()+5);
+document.getElementById("deliveryEstimate").textContent=deliveryDate.toDateString();
+/* ---------------- SEARCH & SORT ---------------- */
+document.getElementById("searchInput").addEventListener("input",(e)=>{
+  const term=e.target.value.toLowerCase();
+  renderProducts(products.filter(p=>p.name.toLowerCase().includes(term)));
+});
+document.getElementById("sortSelect").addEventListener("change",(e)=>{
+  let sorted=[...products];
+  if(e.target.value==="priceAsc") sorted.sort((a,b)=>a.price-b.price);
+  else if(e.target.value==="priceDesc") sorted.sort((a,b)=>b.price-a.price);
+  else if(e.target.value==="stock") sorted.sort((a,b)=>b.stock-b.stock);
+  renderProducts(sorted);
+});
+
+/* ---------------- INITIALIZE ---------------- */
+renderProducts();
+updateCartCount();
+updateTotal();
+</script>
+
+</body>
+</html>

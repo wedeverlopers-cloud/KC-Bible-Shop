@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment | KC Bible Shop</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Inter', sans-serif; background: #fdfaf5; margin:0; display:flex; flex-direction:column; min-height:100vh; }
+h1,h2,h3 { font-family: 'Playfair Display', serif; }
+button { cursor:pointer; }
+footer { background:black; color:#9ca3af; text-align:center; font-size:12px; padding:20px; margin-top:40px; }
+</style>
+</head>
+<body>
+
+<header class="bg-[#630d16] text-white p-6 text-center">
+  <h1 class="text-3xl font-bold">Payment</h1>
+  <p class="text-sm mt-1">Complete your order securely</p>
+</header>
+
+<main class="max-w-3xl mx-auto mt-8 p-6 bg-white rounded-2xl shadow-lg">
+
+  <!-- BACK BUTTON -->
+  <button onclick="window.history.back()" class="mb-6 px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">← Back to Cart</button>
+
+  <!-- DELIVERY DETAILS FORM -->
+  <section class="mb-6">
+    <h2 class="text-xl font-bold text-[#630d16] mb-2">Delivery Details</h2>
+    <form id="deliveryForm" class="space-y-3 p-4 bg-gray-50 rounded-lg">
+      <input type="text" id="name" placeholder="Full Name" class="w-full border rounded-lg px-4 py-2" required>
+      <textarea id="address" placeholder="Address" class="w-full border rounded-lg px-4 py-2" required></textarea>
+      <input type="tel" id="phone" placeholder="Phone Number" class="w-full border rounded-lg px-4 py-2" required>
+      <input type="email" id="email" placeholder="Email Address" class="w-full border rounded-lg px-4 py-2" required>
+      <button type="submit" class="bg-[#630d16] text-white px-6 py-3 rounded-lg hover:bg-[#7a121d] w-full">Save Delivery Info</button>
+    </form>
+  </section>
+
+  <!-- CART ITEMS -->
+  <h2 class="text-2xl font-bold text-[#630d16] mb-4">Your Order</h2>
+  <ul id="cartItems" class="mb-6 space-y-3"></ul>
+
+  <!-- ORDER SUMMARY -->
+  <div class="mb-6 space-y-2 p-4 border rounded-lg bg-gray-50">
+    <div class="flex justify-between"><span>Subtotal</span><span id="subtotal">R0.00</span></div>
+    <div class="flex justify-between"><span>Discount</span><span id="discount">R0.00</span></div>
+    <div class="flex justify-between"><span>VAT (15%)</span><span id="vat">R0.00</span></div>
+    <div class="flex justify-between font-bold text-lg"><span>Total</span><span id="total">R0.00</span></div>
+  </div>
+
+  <!-- COUPON -->
+  <div class="flex gap-2 mb-6">
+    <input type="text" id="couponInput" placeholder="Enter coupon code" class="flex-1 border rounded-lg px-4 py-2">
+    <button id="applyCouponBtn" class="bg-[#630d16] text-white px-4 py-2 rounded-lg hover:bg-[#7a121d]">Apply</button>
+  </div>
+
+  <!-- PAYMENT OPTIONS -->
+  <h2 class="text-2xl font-bold text-[#630d16] mb-4">Payment Options</h2>
+  <div class="flex flex-col gap-3 mb-6">
+    <button onclick="pay('cash.html')" class="bg-[#630d16] text-white p-3 rounded-lg hover:bg-[#7a121d]">💵 Cash on Delivery (R≤500)</button>
+    <button onclick="pay('card.html')" class="bg-[#630d16] text-white p-3 rounded-lg hover:bg-[#7a121d]">💳 Card Payment</button>
+    <button onclick="pay('bitcoin.html')" class="bg-[#630d16] text-white p-3 rounded-lg hover:bg-[#7a121d]">₿ Bitcoin</button>
+    <button onclick="pay('paypal.html')" class="bg-[#630d16] text-white p-3 rounded-lg hover:bg-[#7a121d]">🅿️ PayPal</button>
+    <button onclick="pay('scan.html')" class="bg-[#630d16] text-white p-3 rounded-lg hover:bg-[#7a121d]">📷 Scan to Pay</button>
+    <button onclick="pay('transfer.html')" class="bg-[#630d16] text-white p-3 rounded-lg hover:bg-[#7a121d]">🏦 EFT Transfer</button>
+  </div>
+
+</main>
+
+<footer>
+  &copy; 2025 KC Bible Shop. All rights reserved.
+</footer>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-[#630d16] text-white px-6 py-3 rounded-full text-sm shadow-xl opacity-0 transition-all duration-300 z-50">
+Action completed
+</div>
+
+<script>
+// CART
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let discountRate = 0;
+
+// DELIVERY FORM
+document.getElementById("deliveryForm").addEventListener("submit", function(e){
+  e.preventDefault();
+  const delivery = {
+    name: document.getElementById("name").value.trim(),
+    address: document.getElementById("address").value.trim(),
+    phone: document.getElementById("phone").value.trim(),
+    email: document.getElementById("email").value.trim()
+  };
+  localStorage.setItem("delivery", JSON.stringify(delivery));
+  showToast("Delivery details saved ✅");
+});
+
+// RENDER CART
+function renderCart(){
+  const cartList = document.getElementById("cartItems");
+  cartList.innerHTML="";
+  let subtotal=0;
+  cart.forEach(item=>{
+    const itemTotal = item.price*item.quantity;
+    subtotal += itemTotal;
+    const li = document.createElement("li");
+    li.className="flex justify-between";
+    li.innerHTML=`<span>${item.name} x ${item.quantity}</span><span>R${itemTotal.toFixed(2)}</span>`;
+    cartList.appendChild(li);
+  });
+  updateTotals(subtotal);
+}
+
+// APPLY COUPON
+document.getElementById("applyCouponBtn").addEventListener("click",()=>{
+  const code = document.getElementById("couponInput").value.trim().toUpperCase();
+  const coupons = { "BIBLE10":0.10, "WELCOME5":0.05 };
+  if(coupons[code]){
+    discountRate = coupons[code];
+    applyDiscountToCart(discountRate);
+    showToast(`Coupon applied: ${discountRate*100}% off`);
+  } else {
+    discountRate=0;
+    renderCart();
+    alert("Invalid coupon code");
+  }
+});
+
+// APPLY DISCOUNT DIRECTLY TO CART
+function applyDiscountToCart(rate){
+  cart = cart.map(item=>{
+    return {...item, price:item.price*(1-rate)};
+  });
+  localStorage.setItem("cart", JSON.stringify(cart));
+  renderCart();
+}
+
+// UPDATE TOTALS
+function updateTotals(subtotal){
+  const discountAmount = subtotal*discountRate;
+  const total = subtotal - discountAmount;
+  const vat = total*0.15; // display only
+  document.getElementById("subtotal").textContent="R"+subtotal.toFixed(2);
+  document.getElementById("discount").textContent="-R"+discountAmount.toFixed(2);
+  document.getElementById("vat").textContent="R"+vat.toFixed(2);
+  document.getElementById("total").textContent="R"+total.toFixed(2);
+}
+
+// TOAST
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.remove("opacity-0");
+  setTimeout(()=>t.classList.add("opacity-0"),2000);
+}
+
+// PAYMENT REDIRECT
+function pay(url){
+  // Ensure delivery details are filled
+  const delivery = JSON.parse(localStorage.getItem("delivery")||"{}");
+  if(!delivery.name || !delivery.address || !delivery.phone || !delivery.email){
+    alert("Please fill in delivery details before proceeding.");
+    return;
+  }
+  localStorage.setItem("discountedTotal", document.getElementById("total").textContent.replace("R",""));
+  window.location.href = url;
+}
+
+// INIT
+renderCart();
+</script>
+
+</body>
+</html>

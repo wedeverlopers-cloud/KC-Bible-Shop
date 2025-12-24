@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Bitcoin Payment | KC Bible Shop</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: #fdfaf5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+header {
+    background: #630d16;
+    color: white;
+    padding: 25px;
+    text-align: center;
+}
+
+nav {
+    margin-top: 10px;
+}
+
+nav a {
+    color: #f7e08b;
+    margin: 0 10px;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+}
+
+.card {
+    background: white;
+    max-width: 460px;
+    width: 100%;
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+    text-align: center;
+}
+
+.card h2 {
+    color: #630d16;
+    margin-bottom: 8px;
+}
+
+.card p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.amount {
+    font-size: 18px;
+    font-weight: bold;
+    color: #630d16;
+    margin-bottom: 15px;
+}
+
+.reference {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.reference strong {
+    color: #630d16;
+}
+
+.qr-box {
+    background: #f9f6f1;
+    border: 2px dashed #e5d8c3;
+    border-radius: 20px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.qr-box img {
+    width: 220px;
+    max-width: 100%;
+    border-radius: 12px;
+}
+
+.wallet {
+    background: #f9f6f1;
+    padding: 15px;
+    border-radius: 14px;
+    font-size: 13px;
+    word-break: break-all;
+    margin-bottom: 20px;
+}
+
+.wallet strong {
+    color: #630d16;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.actions a {
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 40px;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.email-btn {
+    background: #1f2937;
+    color: white;
+}
+
+.whatsapp-btn {
+    background: #25D366;
+    color: white;
+}
+
+.note {
+    font-size: 12px;
+    color: gray;
+    margin-top: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Bitcoin Payment</h1>
+    <p>Cryptocurrency Checkout</p>
+
+    <nav>
+        <a href="index.html">🏠 Home</a>
+        <a href="products.html">📦 Products</a>
+        <a href="checkout.html">🧾 Checkout</a>
+    </nav>
+</header>
+
+<main>
+    <div class="card">
+        <h2>Pay with Bitcoin</h2>
+        <p>Send the exact amount to the wallet below</p>
+
+        <div class="amount">
+            Amount Due: <span id="amount">R0.00</span>
+        </div>
+
+        <div class="reference">
+            Order Reference:<br>
+            <strong id="orderRef">KC-000000</strong>
+        </div>
+
+        <div class="qr-box">
+            <!-- 🔁 Replace with your Bitcoin QR image -->
+            <img src="bitcoin.jpeg" alt="Bitcoin QR Code">
+        </div>
+
+        <div class="wallet">
+            Wallet Address:<br>
+            <strong id="walletAddress">
+                bc1qexamplewalletaddress1234567890
+            </strong>
+        </div>
+
+        <div class="actions">
+            <a id="emailLink" class="email-btn">
+                📧 Email Proof of Payment
+            </a>
+
+            <a id="whatsappLink" class="whatsapp-btn" target="_blank">
+                💬 WhatsApp Proof of Payment
+            </a>
+
+            
+            <button onclick="window.location.href='receipt.html'" style="
+                display:block;
+                width: fit-content;
+                margin: 25px auto 0;
+                padding: 10px 22px;
+                border-radius: 30px;
+                border: none;
+                background: #d4af37;
+                color: #000;
+                font-size: 12px;
+                font-weight: bold;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                cursor: pointer;
+                box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+            ">
+                🧾 Print Receipt
+            </button>   
+
+        </div>
+
+        <p class="note">
+            * This is a demo Bitcoin payment page for presentation purposes only.
+        </p>
+    </div>    
+
+</main>
+
+        
+<footer>
+    <div style="
+        background: black;
+        color: #9ca3af;
+        padding: 24px;
+        text-align: center;
+        font-size: 12px;
+    ">
+        &copy; 2025 KC Bible Shop
+    </div>
+</footer>
+
+<script>
+/* TOTAL AMOUNT */
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+let total = 0;
+cart.forEach(item => total += item.price);
+document.getElementById("amount").textContent = "R" + total.toFixed(2);
+
+/* UNIQUE ORDER REFERENCE */
+const ref = "KC-" + Math.floor(100000 + Math.random() * 900000);
+document.getElementById("orderRef").textContent = ref;
+
+/* EMAIL PROOF */
+const shopEmail = "pholosho.k24@icloud.com"; // change if needed
+document.getElementById("emailLink").href =
+    `mailto:${shopEmail}?subject=Bitcoin Payment Proof - ${ref}&body=Hello KC Bible Shop,%0D%0A%0D%0AI have made a Bitcoin payment.%0D%0AOrder Reference: ${ref}%0D%0AAmount: R${total.toFixed(2)}%0D%0A%0D%0AI will attach my proof of payment.%0D%0AThank you.`;
+
+/* WHATSAPP PROOF */
+document.getElementById("whatsappLink").href =
+    `https://wa.me/27637220108?text=Hello%20KC%20Bible%20Shop,%0A%0AI%20have%20made%20a%20Bitcoin%20payment.%0AOrder%20Reference:%20${ref}%0AAmount:%20R${total.toFixed(2)}%0A%0AI%20will%20send%20my%20proof%20of%20payment%20now.`;
+
+</script>
+
+<script>
+function completePayment(methodName) {
+    const orderRef = "KC" + Math.floor(Math.random() * 1000000);
+
+    localStorage.setItem("paymentMethod", methodName);
+    localStorage.setItem("orderRef", orderRef);
+
+    window.location.href = "receipt.html";
+}
+</script>
+
+</body>
+</html>
